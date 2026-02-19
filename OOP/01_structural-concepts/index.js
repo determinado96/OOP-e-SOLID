@@ -29,3 +29,6 @@ class Personagem {
         console.log(`${this.nome} pegou um cogumelo!`);
     }
 }
+
+// Obejtos devem ser nomeados com substantivos.
+const personagem = new Personagem('Mario', 'Vermelho', 0, 1.5, 'Atletico', true);
