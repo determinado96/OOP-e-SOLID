@@ -20,6 +20,11 @@ class Personagem {
         console.log(`${this.nome} pulou!`);
     }
 
+    // Não existe sobrecarga de métodos em JavaScript.
+    // pular(alturaDoPulo) {
+    //     console.log(`${this.nome} pulou ${alturaDoPulo} metros!`);
+    // }
+
     pegarCogumelo() {
         console.log(`${this.nome} pegou um cogumelo!`);
     }
