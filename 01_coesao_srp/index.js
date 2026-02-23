@@ -1,52 +1,108 @@
-class Personagem {
-    static universo = 'Mário Bros'; // Atributo estático da classe Personagem.
+class CalculadoraDeSalario {
+    calcula(funcionario) {
+        // Se surgir um novo cargo, teremos que modificar esta classe, o que viola o princípio de responsabilidade única (SRP)
+        // A calculadora depende diretamente dos cargos (DESENVOLVEDOR, DBA, TESTER).
+        if (funcionario.cargo === "DESENVOLVEDOR") {
+            return this.dezOuVintePorcento(funcionario);
+        }
+        if (funcionario.cargo === "DBA" || funcionario.cargo === "TESTER") {
+            return this.quinzeOuVinteCincoPorcento(funcionario);
+        }
 
-    // Atributos de instância.
-    constructor(nome, cor, quantidadeDeCogumelos, altura, tipoFisico, possuiBigode) {
-        this._nome = nome;
-        this.cor = cor;
-        this.quantidadeDeCogumelos = quantidadeDeCogumelos;
-        this.altura = altura;
-        this.tipoFisico = tipoFisico;
-        this.possuiBigode = possuiBigode;
-    }
-    
-    // Métodos de instância.
-    get nome() {
-        return this._nome;
-    }
+        // if(novoCargo ...) { ... }
 
-    set nome(novoNome) {
-        this._nome = novoNome;
+        // ...
+
+        throw new Error("Funcionário inválido");
     }
 
-    // Método estático da classe Personagem.
-    static apresentarUniverso() {
-        console.log(`Todos os personagens pertencem ao universo ${Personagem.universo}`);
+    // Esses métodos são específicos para cada cargo, 
+    // o que torna a classe CalculadoraDeSalario responsável por mais de uma coisa, violando o SRP.
+    // A classe CalculadoraDeSalario conhece os detalhes de cada cargo.
+    // Qualquer mudança na regra de desconto de um cargo exige mexer nesta classe.  
+    dezOuVintePorcento(funcionario) {
+        if (funcionario.salarioBase > 3000.0) {
+            return funcionario.salarioBase * 0.8;
+        } else {
+            return funcionario.salarioBase * 0.9;
+        }
     }
 
-    pular() {
-        console.log(`${this.nome} pulou!`);
+    quinzeOuVinteCincoPorcento(funcionario) {
+        if (funcionario.salarioBase > 2000.0) {
+            return funcionario.salarioBase * 0.75;
+        } else {
+            return funcionario.salarioBase * 0.85;
+        }
     }
 
-    // Não existe sobrecarga de métodos em JavaScript.
-    // pular(alturaDoPulo) {
-    //     console.log(`${this.nome} pulou ${alturaDoPulo} metros!`);
-    // }
+    // novaRegraPorcento1() { ... }
 
-    pegarCogumelo() {
-        console.log(`${this.nome} pegou um cogumelo!`);
+    // novaRegraPorcento2() { ... }
+
+    // ...   
+}
+
+// Exemplo de uso:
+const funcionario = { cargo: "DESENVOLVEDOR", salarioBase: 3500 };
+const calculadora = new CalculadoraDeSalario();
+console.log(calculadora.calcula(funcionario)); // 2800
+
+// 1. Como podemos identificar que a classe CalculadoraDeSalario viola o princípio de responsabilidade única (SRP)?
+// R: Verificar por quais motivos ela cresce.
+// R: Cresce sempre que um cargo novo surgir ou sempre que uma regra de cálculo nova surgir.
+
+// 2. Métodos como dezOuVintePorcento e quinzeOuVinteCincoPorcento possuem o mesmo esqueleto (abstração).
+// R: Ambos recebem um funcionário e nos devolvem um double com o salário calculado.
+
+// ---------- REFATORAÇÃO ----------
+
+// Classe base para cargos
+class Cargo {
+    calculaSalario(salarioBase) {
+        throw new Error("Método deve ser implementado na subclasse");
     }
 }
 
-// Obejtos devem ser nomeados com substantivos.
-const personagem = new Personagem('Mario', 'Vermelho', 0, 1.5, 'Atletico', true);
-const personagem2 = new Personagem('Luigi', 'Verde', 0, 1.8, 'Atletico', true);
+// Cargos específicos
+class Desenvolvedor extends Cargo {
+    calculaSalario(salarioBase) {
+        return salarioBase > 3000 ? salarioBase * 0.8 : salarioBase * 0.9;
+    }
+}
 
-console.log(personagem);
-console.log(personagem2);
+class Dba extends Cargo {
+    calculaSalario(salarioBase) {
+        return salarioBase > 2000 ? salarioBase * 0.75 : salarioBase * 0.85;
+    }
+}
 
-// Mensagem
-Personagem.apresentarUniverso();
-personagem.pular();
-personagem.pegarCogumelo();
+class Tester extends Cargo {
+    calculaSalario(salarioBase) {
+        return salarioBase > 2000 ? salarioBase * 0.75 : salarioBase * 0.85;
+    }
+}
+
+// Mapeamento de cargos para regras
+// Fica explicito quais cargos existem e onde precisamos mexer para adicionar um novo cargo.
+const RegrasPorCargo = {
+    DESENVOLVEDOR: new Desenvolvedor(),
+    DBA: new Dba(),
+    TESTER: new Tester(),
+};
+
+class CalculadoraDeSalario {
+    // Um novo cargo ou regra não alterará esta classe, o que respeita o princípio de responsabilidade única (SRP).
+    calcula(funcionario) {
+        const regra = RegrasPorCargo[funcionario.cargo];
+        if (!regra) {
+            throw new Error("Funcionário inválido");
+        }
+        return regra.calculaSalario(funcionario.salarioBase);
+    }
+}
+
+// Exemplo de uso:
+const funcionario = { cargo: "DESENVOLVEDOR", salarioBase: 3500 };
+const calculadora = new CalculadoraDeSalario();
+console.log(calculadora.calcula(funcionario)); // 2800
