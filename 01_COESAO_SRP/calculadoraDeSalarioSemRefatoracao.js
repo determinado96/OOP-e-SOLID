@@ -14,12 +14,10 @@
  */
 
 class CalculadoraDeSalario {
-
   /**
    * Calcula o salário final do funcionário de acordo com o cargo
    */
   calcula(funcionario) {
-
     // Dependência direta dos cargos
     if (funcionario.cargo === "DESENVOLVEDOR") {
       return this.dezOuVintePorcento(funcionario);
@@ -62,19 +60,17 @@ class CalculadoraDeSalario {
   }
 }
 
-
 /**
  * Exemplo de uso
  */
 const funcionario = {
   cargo: "DESENVOLVEDOR",
-  salarioBase: 3500
+  salarioBase: 3500,
 };
 
 const calculadora = new CalculadoraDeSalario();
 
 console.log(calculadora.calcula(funcionario)); // 2800
-
 
 /**
  * =========================================================
@@ -88,7 +84,6 @@ console.log(calculadora.calcula(funcionario)); // 2800
  *
  * Portanto ela possui múltiplas responsabilidades.
  */
-
 
 /**
  * =========================================================
